@@ -164,7 +164,7 @@ ttsWindow = null;
 ttsError = false;
 ttsAudio = new Audio("");
 
-function create_edge_TTS({ voice = "zh-CN-XiaoxiaoNeural", timeout = 10, auto_reconnect = true } = {}) {
+function create_edge_TTS({ voice = "zh-CN-XiaoxiaoNeural", rate = "medium", pitch = "default", timeout = 10, auto_reconnect = true } = {}) {
     const TRUSTED_CLIENT_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
     const VOICES_URL = `https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/voices/list?trustedclienttoken=${TRUSTED_CLIENT_TOKEN}`;
     const SYNTH_URL = `wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=${TRUSTED_CLIENT_TOKEN}`;
@@ -180,7 +180,9 @@ function create_edge_TTS({ voice = "zh-CN-XiaoxiaoNeural", timeout = 10, auto_re
     function _SSMLTemplate(input) {
         return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${_voiceLocale}">
               <voice name="${_voice}">
-                  ${input}
+				<prosody rate="${rate}" pitch="${pitch}">
+					${input}
+				</prosody>
               </voice>
           </speak>`;
     }
@@ -295,8 +297,8 @@ function create_edge_TTS({ voice = "zh-CN-XiaoxiaoNeural", timeout = 10, auto_re
         }
     }
 
-    let toStream = function (input) {
-        let requestSSML = _SSMLTemplate(input);
+    let toStream = function (input, rate = "medium", pitch = "default") {
+        let requestSSML = _SSMLTemplate(input, rate, pitch);
         const requestId = uuidv4().replaceAll('-', '');
         const request = `X-RequestId:${requestId}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n` + requestSSML.trim();
 
@@ -319,8 +321,8 @@ function create_edge_TTS({ voice = "zh-CN-XiaoxiaoNeural", timeout = 10, auto_re
         });
     }
 
-    async function play(input) {
-        const url = await toStream(input);
+    async function play(input, rate = "medium", pitch = "default") {
+        const url = await toStream(input, rate, pitch);
         let play_resolve = function () { };
         ttsAudio.src = url;
         ttsAudio.onended = (e) => {
@@ -358,7 +360,7 @@ function create_edge_TTS({ voice = "zh-CN-XiaoxiaoNeural", timeout = 10, auto_re
     });
 }
 
-async function edgeTtsPlay(text, voice = "zh-CN-XiaoxiaoNeural") {
+async function edgeTtsPlay(text, voice = "zh-CN-XiaoxiaoNeural", rate = "medium", pitch = "default") {
     if (text === undefined || text === null || text === '') {
         return;
     }
@@ -368,10 +370,10 @@ async function edgeTtsPlay(text, voice = "zh-CN-XiaoxiaoNeural") {
     }
 
     ttsText = text;
-    const tts = await create_edge_TTS({ voice });
+    const tts = await create_edge_TTS({ voice, rate, pitch });
 
     try {
-        await tts.play(text);
+        await tts.play(text, rate, pitch);
     } catch (e) {
         ttsError = true;
         console.log(e);
