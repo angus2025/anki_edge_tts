@@ -176,7 +176,8 @@ function create_edge_TTS({ voice = "zh-CN-XiaoxiaoNeural", rate = "medium", pitc
     let _voice = voice;
     const _queue = { message: [], url_resolve: {}, url_reject: {} };
     let ready = false;
-
+console.log(rate);
+console.log(pitch);
     function _SSMLTemplate(input) {
         return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${_voiceLocale}">
               <voice name="${_voice}">
@@ -375,6 +376,7 @@ async function edgeTtsPlay(text, voice = "zh-CN-XiaoxiaoNeural", rate = "medium"
     try {
         await tts.play(text, rate, pitch);
     } catch (e) {
+		
         ttsError = true;
         console.log(e);
     }
